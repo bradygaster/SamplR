@@ -1,0 +1,4 @@
+[submodule "RtMidi.Core"]
+	path = RtMidi.Core
+	url = https://github.com/micdah/RtMidi.Core.git
+	branch = master
