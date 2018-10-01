@@ -1,0 +1,73 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+<div class="text-center">
+    <button id="playerButton" class="btn btn-success btnPlay" data-channel="0" onclick="playSample(this);">Waiting for instrument</button>
+</div>
+
+@section scripts
+{
+    <script src="~/js/signalr.js"></script>
+    <script>
+    const playSample = async (e) => {
+        console.log(e.innerText);
+
+        await fetch('/api/player', {
+            method: 'POST',
+            body: JSON.stringify({
+                Channel: document.getElementById('playerButton').dataset.channel,
+                Name: document.getElementById('playerButton').innerText
+            }),
+            headers: {
+                'Content-Type' : 'application/json'
+            }
+        });
+    }
+
+    const getSample = async () => {
+        const response = await fetch('/api/player');
+        const sample = await response.json();
+
+        if(!sample) {
+            document.getElementById('playerButton').innerText = 'No more samples available';
+            return;
+        }
+
+        document.getElementById('playerButton').innerText = sample.name;
+        document.getElementById('playerButton').dataset.channel = sample.channel;
+        console.log(sample);
+    }
+
+    const connection = new signalR.HubConnectionBuilder()
+        .withUrl("/SamplR")
+        .configureLogging(signalR.LogLevel.Information)
+        .build();
+
+    connection.on('OnSamplePlayed', (sample) => {
+        console.log('OnSamplePlayed: ' + sample.Channel);
+    });
+    
+    const start = () => {
+        connection.start()
+            .then(() => {
+                console.log('connected');
+                getSample();
+            })
+            .catch(err => {
+                console.error(err.toString());
+                setTimeout(function () {
+                    start();
+                }, 5000);
+            });
+    };
+
+    connection.onclose(function () {
+        start();
+    });
+
+    start();
+    </script>
+}
