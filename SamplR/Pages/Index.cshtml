@@ -4,8 +4,7 @@
     ViewData["Title"] = "Home page";
 }
 
-<div class="text-center">
-    <button id="playerButton" class="btn btn-success btnPlay" data-channel="0" onclick="playSample(this);">Waiting for instrument</button>
+<div class="text-center" id="samples">
 </div>
 
 @section scripts
@@ -13,32 +12,8 @@
     <script src="~/js/signalr.js"></script>
     <script>
     const playSample = async (e) => {
-        console.log(e.innerText);
-
-        await fetch('/api/player', {
-            method: 'POST',
-            body: JSON.stringify({
-                Channel: document.getElementById('playerButton').dataset.channel,
-                Name: document.getElementById('playerButton').innerText
-            }),
-            headers: {
-                'Content-Type' : 'application/json'
-            }
-        });
-    }
-
-    const getSample = async () => {
-        const response = await fetch('/api/player');
-        const sample = await response.json();
-
-        if(!sample) {
-            document.getElementById('playerButton').innerText = 'No more samples available';
-            return;
-        }
-
-        document.getElementById('playerButton').innerText = sample.name;
-        document.getElementById('playerButton').dataset.channel = sample.channel;
-        console.log(sample);
+        console.log('OnSamplePlayed: ' + e.dataset.channel);
+        connection.invoke('play', e.dataset.channel);
     }
 
     const connection = new signalR.HubConnectionBuilder()
@@ -46,15 +21,22 @@
         .configureLogging(signalR.LogLevel.Information)
         .build();
 
-    connection.on('OnSamplePlayed', (sample) => {
-        console.log('OnSamplePlayed: ' + sample.Channel);
+    connection.on('SamplesLoaded', (samples) => {
+        for(i=0; i<samples.length; i++)
+        {
+            var template = document.createElement('template');
+            var html = '<button id="playerButton" class="btn btn-success btnPlay" data-channel="' + samples[i].channel + '" onclick="playSample(this);">' + samples[i].name + '</button>';
+            template.innerHTML = html;
+            var elm = template.content.firstChild;
+            document.getElementById('samples').appendChild(elm);
+        }
     });
     
     const start = () => {
         connection.start()
             .then(() => {
                 console.log('connected');
-                getSample();
+                connection.invoke('GetSamples');
             })
             .catch(err => {
                 console.error(err.toString());

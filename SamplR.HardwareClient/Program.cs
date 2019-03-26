@@ -25,7 +25,6 @@ namespace SamplR.HardwareClient
 
         public Program()
         {
-            /*
             var connection = new HubConnectionBuilder()
                 .WithUrl(URL)
                 .Build();
@@ -48,10 +47,8 @@ namespace SamplR.HardwareClient
             Console.ReadLine();
 
             CloseOutputDevices();
-            */
         }
 
-        /*
         void GetTheAvailableAPIs() {
             foreach (var api in MidiDeviceManager.Default.GetAvailableMidiApis())
                 Console.WriteLine($"Available API: {api}");
@@ -87,6 +84,24 @@ namespace SamplR.HardwareClient
                 case 4:
                     midiChannel = Channel.Channel4;
                     break;
+                case 5:
+                    midiChannel = Channel.Channel5;
+                    break;
+                case 6:
+                    midiChannel = Channel.Channel6;
+                    break;
+                case 7:
+                    midiChannel = Channel.Channel7;
+                    break;
+                case 8:
+                    midiChannel = Channel.Channel8;
+                    break;
+                case 9:
+                    midiChannel = Channel.Channel9;
+                    break;
+                case 10:
+                    midiChannel = Channel.Channel10;
+                    break;
             }
 
             if (devices.Count > 0)
@@ -102,7 +117,6 @@ namespace SamplR.HardwareClient
                 device.Dispose();
             }
         }
-        */
     }
 
     public class Sample

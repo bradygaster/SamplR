@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Client;
 using RtMidi.Core;
@@ -11,8 +12,7 @@ namespace SamplR.HardwareClient
 {
     public class Program
     {
-        const string URL = "https://samplr.azurewebsites.net/samplr";
-        const string EVENT = "OnSamplePlayed";
+        const string URL = "https://localhost:5001/samplr";
         private readonly List<IMidiOutputDevice> devices =
             new List<IMidiOutputDevice>();
             
@@ -37,12 +37,9 @@ namespace SamplR.HardwareClient
                 .WithUrl(URL)
                 .Build();
 
-            connection.On<Sample>(EVENT, (sample) =>
+            connection.On<short>("OnSamplePlayed", (channel) =>
             {
-                SendNoteOnMessage(sample.Channel);
-
-                Console.WriteLine(
-                    $"{sample.Name} played on channel {sample.Channel}");
+                SendNoteOnMessage(channel);
             });
 
             await connection.StartAsync();
@@ -50,6 +47,7 @@ namespace SamplR.HardwareClient
 
         void GetTheAvailableAPIs()
         {
+            var t = MidiDeviceManager.Default;
             foreach (var api in MidiDeviceManager.Default.GetAvailableMidiApis())
                 Console.WriteLine($"Available API: {api}");
         }
